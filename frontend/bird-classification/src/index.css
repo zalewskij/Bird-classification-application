@@ -1,0 +1,38 @@
+html, body {
+  padding: 0;
+  margin: 0;
+}
+
+.header {
+  display: flex;
+  gap: 10px;
+}
+
+.header-logo {
+  font-size: 1.1rem;
+  flex-grow: 1;
+  display: flex;
+  font-weight: bold;
+  letter-spacing: 0.5px;
+}
+
+.header-logo img {
+  margin: 10px 0;
+}
+
+.content {
+  padding: 20px 20px;
+}
+
+.footer {
+  text-align: center;
+}
+
+.float-button {
+  bottom: 24px;
+}
+
+.main-page {
+  display: flex;
+  align-items: center;
+}
