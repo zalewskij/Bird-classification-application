@@ -18,7 +18,7 @@ export const polishVersionState = atom<boolean>({
   default: false,
 });
 
-export const uploadedFileState = atom<File | null>({
-  key: 'uploadedFileState',
+export const recordingURLState = atom<string | null>({
+  key: 'recordingURLState',
   default: null,
 });

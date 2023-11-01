@@ -1,14 +1,18 @@
-import { useNavigate } from 'react-router-dom';
-import { Card, Space, Button, Upload, message, Typography } from 'antd';
-import { FaUpload, FaRegCircleDot } from 'react-icons/fa6';
+import { useEffect, useState } from 'react';
 import { useSetRecoilState } from 'recoil';
-import { uploadedFileState } from '../atoms';
+import { useNavigate } from 'react-router-dom';
+import { Card, Space, Button, Upload, message, Typography, Alert } from 'antd';
+import { FaUpload, FaRegCircleDot, FaStop } from 'react-icons/fa6';
+import { recordingURLState } from '../atoms';
 
 const { Text } = Typography;
 
 export default function MainPage() {
   const navigate = useNavigate();
-  const setUploadedFile = useSetRecoilState(uploadedFileState);
+  const setRecordingURLState = useSetRecoilState(recordingURLState);
+  const [recordingUnavailable, setRecordingUnavailable] = useState(false);
+  const [ongoingRecording, setOngoingRecording] = useState(false);
+  const [recorder, setRecorder] = useState<MediaRecorder | null>(null);
 
   const validateFile = (file: File) => {
     if (!file.type.startsWith('audio/')) {
@@ -25,9 +29,50 @@ export default function MainPage() {
       return;
     }
 
-    setUploadedFile(file);
+    const audioURL = window.URL.createObjectURL(file);
+    setRecordingURLState(audioURL);
     navigate('/choosing_fragment');
   }
+
+  useEffect(() => {
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      setRecordingUnavailable(true);
+    }
+  });
+
+  const startRecording = () => {
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      setRecordingUnavailable(true);
+      return;
+    }
+
+    setRecordingUnavailable(false);
+    navigator.mediaDevices
+      .getUserMedia({ audio: true })
+      .then((stream) => {
+        const mediaRecorder = new MediaRecorder(stream);
+        let chunks: Blob[] = [];
+        
+        setOngoingRecording(true);
+        setRecorder(mediaRecorder);
+
+        mediaRecorder.start();
+
+        mediaRecorder.addEventListener('dataavailable', (e) => {
+          chunks.push(e.data);
+        });
+
+        mediaRecorder.addEventListener('stop', () => {
+          const blob = new Blob(chunks, { type: "audio/ogg; codecs=opus" });
+          const audioURL = window.URL.createObjectURL(blob);
+          setRecordingURLState(audioURL);
+          navigate('/choosing_fragment');
+        });
+      })
+      .catch(() => {
+        setRecordingUnavailable(true);
+      });
+  };
 
   return (
     <Card>
@@ -39,14 +84,25 @@ export default function MainPage() {
         <Upload showUploadList={false} maxCount={1} accept='audio/*'
           customRequest={({ file }) => uploadFile(file)}
           beforeUpload={validateFile}>
-          <Button type='primary' icon={<FaUpload />}  size='large'>
+          <Button type='primary' icon={<FaUpload />}  size='large' disabled={ongoingRecording}>
             Click to&nbsp;<span style={{ fontWeight: 'bold' }}>upload</span>
           </Button>
         </Upload>
 
-        <Button type='primary' icon={<FaRegCircleDot />} size='large'>
+        <Button type='primary' icon={<FaRegCircleDot />} size='large' disabled={recordingUnavailable || ongoingRecording}
+          onClick={startRecording}>
           Click to&nbsp;<span style={{ fontWeight: 'bold' }}>record</span>
         </Button>
+        {
+          recordingUnavailable && <Alert message='Recording audio is not available on this device' type='warning' showIcon closable />
+        }
+        {
+          ongoingRecording && <Button type='primary' icon={<FaStop />} size='large' onClick={() => {
+            if (recorder === null) return;
+            recorder.stop();
+            setOngoingRecording(false);
+          }}>Stop</Button>
+        }
       </Space>
     </Card>
   );
