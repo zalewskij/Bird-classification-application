@@ -1,4 +1,4 @@
-html, body {
+* {
   padding: 0;
   margin: 0;
 }
@@ -28,7 +28,7 @@ html, body {
   padding: 20px 20px;
 }
 
-.content :only-child {
+.content > :only-child {
   max-width: 1000px;
   margin: auto;
 }
@@ -39,4 +39,44 @@ html, body {
 
 .float-button {
   bottom: 24px;
+}
+
+.playerControls {
+  margin: 10px 0;
+  width: 100%;
+  flex-wrap: wrap;
+}
+
+.playerControls :last-child {
+  margin-left: auto;
+}
+
+.recording {
+  color: red;
+  font-size: 50px;
+  line-height: 100%;
+  position: relative;
+}
+
+.recording::after {
+  content: '';
+  position: absolute;
+  background: none;
+  top: 50%;
+  left: 50%;
+  width: 60px;
+  height: 60px;
+  border-radius: 100%;
+  border: red 1px solid;
+  animation: 600ms infinite alternate ease-in-out recordingAnimation;
+}
+
+@keyframes recordingAnimation {
+  from {
+    transform: translate(-50%,-50%);
+  }
+
+  to {
+    transform: translate(-50%,-50%) scale(130%);
+  }
 }

@@ -8,6 +8,7 @@ import ErrorPage from './components/ErrorPage.tsx';
 import MainPage from './components/MainPage.tsx'
 import About from './components/About.tsx';
 import ChoosingFragment from './components/ChoosingFragment.tsx';
+import Results, { action as resultsAction } from './components/Results.tsx';
 
 const router = createBrowserRouter([
   {
@@ -27,6 +28,11 @@ const router = createBrowserRouter([
         path: 'choosing_fragment',
         element: <ChoosingFragment />,
       },
+      {
+        path: 'results',
+        element: <Results />,
+        action: resultsAction,
+      }
     ],
   },
 ]);

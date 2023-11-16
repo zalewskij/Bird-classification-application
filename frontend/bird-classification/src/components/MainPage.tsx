@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useSetRecoilState } from 'recoil';
 import { useNavigate } from 'react-router-dom';
 import { Card, Space, Button, Upload, message, Typography, Alert } from 'antd';
-import { FaUpload, FaRegCircleDot, FaStop } from 'react-icons/fa6';
+import { FaUpload, FaRegCircleDot, FaStop, FaMicrophone } from 'react-icons/fa6';
 import { recordingURLState } from '../atoms';
 
 const { Text } = Typography;
@@ -97,11 +97,16 @@ export default function MainPage() {
           recordingUnavailable && <Alert message='Recording audio is not available on this device' type='warning' showIcon closable />
         }
         {
-          ongoingRecording && <Button type='primary' icon={<FaStop />} size='large' onClick={() => {
-            if (recorder === null) return;
-            recorder.stop();
-            setOngoingRecording(false);
-          }}>Stop</Button>
+          ongoingRecording && <>
+            <div className='recording'>
+              <FaMicrophone />
+            </div>
+            <Button type='primary' icon={<FaStop />} size='large' onClick={() => {
+              if (recorder === null) return;
+              recorder.stop();
+              setOngoingRecording(false);
+            }}>Stop</Button>
+          </>
         }
       </Space>
     </Card>

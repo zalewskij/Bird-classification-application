@@ -18,7 +18,7 @@ export const polishVersionState = atom<boolean>({
   default: false,
 });
 
-export const recordingURLState = atom<string | null>({
+export const recordingURLState = atom<string>({
   key: 'recordingURLState',
-  default: null,
+  default: '',
 });

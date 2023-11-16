@@ -1,11 +1,19 @@
-import { Card } from 'antd';
+import { Card, Typography } from 'antd';
+
+const { Paragraph, Link } = Typography;
 
 export default function About() {
   return (
     <Card title='About'>
-      Lorem ipsum dolor sit amet consectetur, adipisicing elit. Accusamus molestias quos officiis debitis odit consequuntur, ipsa, placeat earum modi magnam quas quidem. Culpa a sunt inventore illo deserunt numquam officia!
-      Natus, aspernatur. Ducimus accusamus accusantium corporis illo enim quae architecto quisquam incidunt id libero corrupti, ipsam quam, ipsum voluptate voluptates sunt, placeat sint obcaecati laborum nulla fuga. Minima, fugit sint!
-      Magni modi repellat numquam, dolorem magnam voluptatum. Nulla rem mollitia ratione sapiente itaque. Enim ducimus mollitia dolor distinctio explicabo aliquam nesciunt sapiente dolores quisquam nobis quod quia aperiam, debitis numquam.
+      <Paragraph>
+        This bird classification application was prepared as a part of the bachelor thesis by Zofia Łągiewka, Piotr Sieczka and Jacek Zalewski at <Link href='https://ww2.mini.pw.edu.pl/'>the Faculty of Mathematics and Information Science</Link> of <Link href='https://www.pw.edu.pl/'>Warsaw University of Technology</Link>, under the supervision of <Link href='https://ajastrzebska.mini.pw.edu.pl/'>Agnieszka Jastrzębska, Ph.D., D.Sc.</Link>
+      </Paragraph>
+      <Paragraph>
+        The data used for training the machine learning model comes from the <Link href='https://xeno-canto.org/'>xeno-canto</Link> database. The birds' photos comes from <Link href='https://commons.wikimedia.org/'>Wikimedia Commons</Link>.
+      </Paragraph>
+      <Paragraph>
+        The application was created using <Link href='https://react.dev/'>React</Link> and <Link href='https://ant.design/'>Ant Design</Link>. Spectrograms are generated using <Link href='https://wavesurfer.xyz/'>wavesurfer.js</Link>. The machine learing model was creaated using <Link href='https://pytorch.org/'>PyTorch</Link> and <Link href='https://librosa.org/'>Librosa</Link>.
+      </Paragraph>
     </Card>
   );
 }
