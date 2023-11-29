@@ -67,7 +67,7 @@ export default function Results() {
             <Space direction='vertical'>
               <Title level={result.english_name === mostProbableResult ? 2 : 4}>{isPolishVersion ? result.polish_name : result.english_name}</Title>
               <Text italic strong>{result.latin_name}</Text>
-              <Text>Probability: {result.probability * 100}%</Text>
+              <Text>Probability: {(result.probability * 100).toFixed(2)}%</Text>
             </Space>
           </List.Item>
         )}

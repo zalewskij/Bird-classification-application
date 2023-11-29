@@ -1,9 +1,24 @@
-import librosa
+import os
 from flask import Flask, request
 from flask_cors import CORS
+import pandas as pd
+import torch
+
+from CNN_model import CNNNetwork
+from preprocessing import classify_audio, load_audio, preprocess_audio
 
 app = Flask(__name__)
 CORS(app)
+
+DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
+base_path = os.path.realpath(os.path.dirname(__file__))
+
+model = CNNNetwork().to(DEVICE)
+model.load_state_dict(torch.load(os.path.join(base_path, 'cnn_1.pt')))
+model.eval()
+
+df = pd.read_csv(os.path.join(base_path, 'bird-list-extended.csv'), delimiter=";")
+birds_list = df[df["Top 30"] == 1].sort_values(by='latin_name')
 
 @app.route('/analyze-audio', methods=['POST'])
 def analyze_audio():
@@ -36,41 +51,22 @@ def analyze_audio():
     return { 'error': 'Audio is too long' }, 400
 
   try:
-    y, sr = librosa.load(audio_file)
-    real_duration = librosa.get_duration(y=y, sr=sr)
-    if real_duration < end_time:
+    y, real_duration = load_audio(audio_file, sr=32000)
+    if real_duration < end_time or real_duration < 3:
       return { 'error': 'Audio is too short' }, 400
 
+    input = preprocess_audio(y, start_time, end_time, sr=32000, n_fft=512, hop_length=384, length_in_seconds=3)
+    output = classify_audio(input, model, DEVICE)
+    result = []
+
+    for i, value in enumerate(output):
+      if value > 0.01:
+        bird = birds_list.iloc[i].to_dict()
+        bird['probability'] = value
+        result.append(bird)
+
     return {
-      'results': [
-          {
-              'probability': 0.2,
-              'english_name': 'Common swift',
-              'polish_name': 'Jerzyk',
-              'latin_name': 'Apus apus',
-              'order': 'Apodiformes',
-              'family': 'Apodidae',
-              'image': 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/dc/ApusApusKlausRoggel01.jpg/150px-ApusApusKlausRoggel01.jpg',
-          },
-          {
-              'probability': 0.8,
-              'english_name': 'Pallid swift',
-              'polish_name': 'Jerzyk blady',
-              'latin_name': 'Apus pallidus',
-              'order': 'Apodiformes',
-              'family': 'Apodidae',
-              'image': 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/65/Apuspallidus_9043.JPG/150px-Apuspallidus_9043.JPG',
-          },
-          {
-              'probability': 0.3,
-              'english_name': 'Common snipe',
-              'polish_name': 'Kszyk',
-              'latin_name': 'Gallinago gallinago',
-              'order': 'Charadriiformes',
-              'family': 'Scolopacidae',
-              'image': 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/aa/Gallinago_gallinago_1_%28Marek_Szczepanek%29.jpg/150px-Gallinago_gallinago_1_%28Marek_Szczepanek%29.jpg',
-          },
-      ]
+      'results': result
     }
 
   except Exception as e:
