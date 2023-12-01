@@ -4,7 +4,7 @@ from flask_cors import CORS
 import pandas as pd
 import torch
 
-from CNN_model import CNNNetwork
+from birdclassification.training.cnn_training_torch.CNN_model import CNNNetwork
 from preprocessing import classify_audio, load_audio, preprocess_audio
 
 app = Flask(__name__)
