@@ -4,11 +4,14 @@ import { useNavigate } from 'react-router-dom';
 import { Card, Space, Button, Upload, message, Typography, Alert } from 'antd';
 import { FaUpload, FaRegCircleDot, FaStop, FaMicrophone } from 'react-icons/fa6';
 import { recordingURLState } from '../atoms';
+import { polishVersionState } from '../atoms';
+import { useRecoilValue } from 'recoil';
 
 const { Text } = Typography;
 
 export default function MainPage() {
   const navigate = useNavigate();
+  const isPolishVersion = useRecoilValue(polishVersionState);
   const setRecordingURLState = useSetRecoilState(recordingURLState);
   const [recordingUnavailable, setRecordingUnavailable] = useState(false);
   const [ongoingRecording, setOngoingRecording] = useState(false);
@@ -16,7 +19,7 @@ export default function MainPage() {
 
   const validateFile = (file: File) => {
     if (!file.type.startsWith('audio/')) {
-      message.error('File could not be opened');
+      message.error(isPolishVersion ? 'Nie można otworzyć pliku' : 'File could not be opened');
       return false;
     }
 
@@ -25,7 +28,7 @@ export default function MainPage() {
 
   const uploadFile = (file: File | string | Blob) => {
     if (!(file instanceof File)) {
-      message.error('An error occured while loading the file');
+      message.error(isPolishVersion ? 'Wystąpił błąd podczas otwierania pliku' : 'An error occured while loading the file');
       return;
     }
 
@@ -52,7 +55,7 @@ export default function MainPage() {
       .then((stream) => {
         const mediaRecorder = new MediaRecorder(stream);
         let chunks: Blob[] = [];
-        
+
         setOngoingRecording(true);
         setRecorder(mediaRecorder);
 
@@ -63,7 +66,8 @@ export default function MainPage() {
         });
 
         mediaRecorder.addEventListener('stop', () => {
-          const blob = new Blob(chunks, { type: "audio/ogg; codecs=opus" });
+          // const blob = new Blob(chunks, { type: "audio/ogg; codecs=opus" });
+          const blob = new Blob(chunks, { type: "audio/wav" });
           const audioURL = window.URL.createObjectURL(blob);
           setRecordingURLState(audioURL);
           navigate('/choosing_fragment');
@@ -76,25 +80,27 @@ export default function MainPage() {
 
   return (
     <Card>
-      <Space direction='vertical' size='large' style={{ display: 'flex', alignItems: 'center' }}>
+      <Space direction='vertical' size='large' style={{ display: 'flex', alignItems: 'center', textAlign: 'center' }}>
         <Text>
-          To classify a bird, start recording or upload a file.
+          {isPolishVersion ? 'By rozpoznać gatunek ptaka, zacznij nagrywanie lub wgraj plik.' : 'To classify a bird, start recording or upload a file.'}
         </Text>
 
         <Upload showUploadList={false} maxCount={1} accept='audio/*'
           customRequest={({ file }) => uploadFile(file)}
           beforeUpload={validateFile}>
-          <Button type='primary' icon={<FaUpload />}  size='large' disabled={ongoingRecording}>
-            Click to&nbsp;<span style={{ fontWeight: 'bold' }}>upload</span>
+          <Button type='primary' icon={<FaUpload />} size='large' disabled={ongoingRecording}>
+            {isPolishVersion ? 'Kliknij, aby' : 'Click to'}&nbsp;<span style={{ fontWeight: 'bold' }}>{isPolishVersion ? 'wgrać plik' : 'upload'}</span>
           </Button>
         </Upload>
 
         <Button type='primary' icon={<FaRegCircleDot />} size='large' disabled={recordingUnavailable || ongoingRecording}
           onClick={startRecording}>
-          Click to&nbsp;<span style={{ fontWeight: 'bold' }}>record</span>
+          {isPolishVersion ? 'Kliknij, aby' : 'Click to'}&nbsp;<span style={{ fontWeight: 'bold' }}>{isPolishVersion ? 'nagrywać' : 'record'}</span>
         </Button>
         {
-          recordingUnavailable && <Alert message='Recording audio is not available on this device' type='warning' showIcon closable />
+          recordingUnavailable && <Alert message={
+            isPolishVersion ? 'Nagrywanie dźwięku nie jest dostępne na tym urządzeniu' : 'Recording audio is not available on this device'
+          } type='warning' showIcon closable />
         }
         {
           ongoingRecording && <>

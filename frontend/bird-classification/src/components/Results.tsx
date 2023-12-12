@@ -1,5 +1,6 @@
 import { useActionData, type ActionFunctionArgs, useNavigate } from 'react-router-dom';
-import { Card, List, Space, Typography, Image, Result } from 'antd';
+import { Card, List, Space, Typography, Image, Result, Popover, Button } from 'antd';
+import { FaInfo } from 'react-icons/fa6';
 import { useEffect, useState } from 'react';
 import { useRecoilValue } from 'recoil';
 import { polishVersionState } from '../atoms';
@@ -63,12 +64,25 @@ export default function Results() {
         pagination={false}
         dataSource={results}
         renderItem={(result) => (
-          <List.Item key={result.english_name} extra={<Image width={100} src={result.image} />}>
+          <List.Item key={result.english_name} className='result'>
             <Space direction='vertical'>
-              <Title level={result.english_name === mostProbableResult ? 2 : 4}>{isPolishVersion ? result.polish_name : result.english_name}</Title>
-              <Text italic strong>{result.latin_name}</Text>
-              <Text>Probability: {(result.probability * 100).toFixed(2)}%</Text>
+              <Title level={result.english_name === mostProbableResult ? 2 : 4} style={{ textTransform: 'capitalize' }}>
+                {isPolishVersion ? result.polish_name : result.english_name}
+              </Title>
+              <Text italic strong>
+                {result.latin_name}
+                <Popover content={
+                  <div>
+                    <p>{isPolishVersion ? 'Rząd' : 'Order'}: {result.order}</p>
+                    <p>{isPolishVersion ? 'Rodzina' : 'Family'}: {result.family}</p>
+                  </div>
+                } trigger='click'>
+                  <Button shape="circle" icon={<FaInfo />} size='small' style={{ marginLeft: '5px' }} />
+                </Popover>
+              </Text>
+              <Text>{isPolishVersion ? 'Prawdopodobieństwo' : 'Probability'}: {(result.probability * 100).toFixed(2)}%</Text>
             </Space>
+            <Image width={100} src={result.image} />
           </List.Item>
         )}
       />

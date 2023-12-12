@@ -6,14 +6,20 @@
 .header {
   display: flex;
   gap: 10px;
+  line-height: 1rem;
+}
+
+header>* {
+  display: flex;
+  align-items: center;
 }
 
 .header-logo {
-  display: flex;
-  align-items: center;
-  font-size: 1.1rem;
+  font-size: 1.15rem;
   font-weight: bold;
   letter-spacing: 0.5px;
+  line-height: 1.2;
+  gap: 5px;
 }
 
 .header-logo img {
@@ -22,13 +28,14 @@
 
 .header :nth-child(2) {
   margin-left: auto;
+  text-align: right;
 }
 
 .content {
   padding: 20px 20px;
 }
 
-.content > :only-child {
+.content> :only-child {
   max-width: 1000px;
   margin: auto;
 }
@@ -73,10 +80,20 @@
 
 @keyframes recordingAnimation {
   from {
-    transform: translate(-50%,-50%);
+    transform: translate(-50%, -50%);
   }
 
   to {
-    transform: translate(-50%,-50%) scale(130%);
+    transform: translate(-50%, -50%) scale(130%);
   }
+}
+
+.result {
+  display: flex !important;
+  flex-wrap: wrap;
+  gap: 15px;
+}
+
+.result> :first-child {
+  min-width: 250px;
 }

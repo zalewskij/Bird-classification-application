@@ -1,4 +1,4 @@
-import { useState } from 'react' 
+import { useState } from 'react';
 import { Outlet, useNavigate } from 'react-router-dom';
 import { Layout, theme, FloatButton, ConfigProvider } from 'antd';
 import { FaQuestion, FaSun, FaGear, FaMoon } from 'react-icons/fa6'
@@ -30,7 +30,7 @@ function App() {
         <Content className='content'>
           <Outlet />
         </Content>
-        <Footer className='footer'>Bird classification &copy; 2023</Footer>
+        <Footer className='footer'>{isPolishVersion ? 'Rozpoznawanie ptaków' : 'Bird classification'} &copy; 2024</Footer>
         <FloatButton.Group open={floatMenuOpen} trigger='click' icon={<FaGear />} onClick={() => setFloatMenuOpen(!floatMenuOpen)} className='float-button'>
           <FloatButton icon={isDarkMode ? <FaSun /> : <FaMoon />} onClick={() => {
             setIsDarkMode(!isDarkMode);

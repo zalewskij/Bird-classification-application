@@ -8,26 +8,35 @@ from birdclassification.training.cnn_training_torch.CNN_model import CNNNetwork
 from preprocessing import classify_audio, load_audio, preprocess_audio
 
 app = Flask(__name__)
-CORS(app)
+birds_list = None
+model = None
+DEVICE = None
 
-DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
-base_path = os.path.realpath(os.path.dirname(__file__))
+def setup_application():
+  global birds_list
+  global model
+  global DEVICE
 
-model = CNNNetwork().to(DEVICE)
-model.load_state_dict(torch.load(os.path.join(base_path, 'cnn_1.pt')))
-model.eval()
+  CORS(app)
 
-df = pd.read_csv(os.path.join(base_path, 'bird-list-extended.csv'), delimiter=";")
-birds_list = df[df["Top 30"] == 1].sort_values(by='latin_name')
+  DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
+  base_path = os.path.realpath(os.path.dirname(__file__))
+
+  model = CNNNetwork().to(DEVICE)
+  model.load_state_dict(torch.load(os.path.join(base_path, 'cnn_1.pt')))
+  model.eval()
+
+  df = pd.read_csv(os.path.join(base_path, 'bird-list-extended.csv'), delimiter=";")
+  birds_list = df[df["Top 30"] == 1].sort_values(by='latin_name')
 
 @app.route('/analyze-audio', methods=['POST'])
 def analyze_audio():
   if 'recording' not in request.files:
     return { 'error': 'No audio file provided'}, 400
-  
+
   if 'start' not in request.form:
     return { 'error': 'No start time provided'}, 400
-  
+
   if 'end' not in request.form:
     return { 'error': 'No end time provided'}, 400
 
@@ -46,7 +55,7 @@ def analyze_audio():
 
   if duration < 3:
     return { 'error': 'Audio is too short' }, 400
-  
+
   if duration > 60:
     return { 'error': 'Audio is too long' }, 400
 
@@ -73,4 +82,5 @@ def analyze_audio():
     return { 'error': str(e) }, 400
 
 if __name__ == '__main__':
+  setup_application()
   app.run(debug=True)

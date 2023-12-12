@@ -4,15 +4,18 @@ import torch
 import torchaudio
 
 def load_audio(audio_file, sr):
-  y, sr2 = torchaudio.load(audio_file)
-  if sr2 != sr:
-    y = torchaudio.transforms.Resample(orig_freq=sr2, new_freq=sr)(y)
-  real_duration = y.size()[1] / sr
-  return y, real_duration
+  try:
+    y, sr2 = torchaudio.load(audio_file)
+    if sr2 != sr:
+      y = torchaudio.transforms.Resample(orig_freq=sr2, new_freq=sr)(y)
+    real_duration = y.size()[1] / sr
+    return y, real_duration
+  except Exception:
+    raise Exception('Invalid audio format')
 
 def preprocess_audio(waveform, start_time, end_time, sr, n_fft, hop_length, length_in_seconds):
   length = length_in_seconds * sr
-  
+
   waveform = mix_down(waveform)
   waveform = right_pad(waveform, minimal_length=length)
 

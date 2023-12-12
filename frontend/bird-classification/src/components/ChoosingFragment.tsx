@@ -1,7 +1,7 @@
-import { useNavigate, useSubmit  } from 'react-router-dom';
+import { useNavigate, useSubmit } from 'react-router-dom';
 import { Button, Card, Typography, Slider, Space, Alert, Spin } from 'antd';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { recordingURLState } from '../atoms';
+import { polishVersionState, recordingURLState } from '../atoms';
 import { useRecoilValue } from 'recoil';
 import { FaPause, FaPlay, FaVolumeHigh, FaVolumeLow, FaVolumeOff, FaVolumeXmark } from 'react-icons/fa6';
 import WaveSurfer from 'wavesurfer.js'
@@ -15,6 +15,7 @@ export default function ChoosingFragment() {
   const navigate = useNavigate();
   const submit = useSubmit();
   const recordingURL = useRecoilValue(recordingURLState);
+  const isPolishVersion = useRecoilValue(polishVersionState);
 
   const [audioLoading, setAudioLoading] = useState(true);
   const [chosenFragment, setChosenFragment] = useState([0, 1]);
@@ -36,13 +37,13 @@ export default function ChoosingFragment() {
     setCurrentTime(newValue);
     audioRef.current.currentTime = newValue;
   };
-  
+
   const repeat = useCallback(() => {
     if (audioRef.current === null) return;
     setCurrentTime(audioRef.current.currentTime);
     playAnimationRef.current = requestAnimationFrame(repeat);
   }, []);
-  
+
   useEffect(() => {
     if (recordingURL === '') {
       navigate('/');
@@ -69,7 +70,6 @@ export default function ChoosingFragment() {
     });
 
     ws.on('ready', () => {
-      
       setSpectrogramLoading(false);
     });
   }, []);
@@ -92,8 +92,8 @@ export default function ChoosingFragment() {
 
   useEffect(() => {
     const fragmentLength = Math.abs(chosenFragment[1] - chosenFragment[0]);
-    if (fragmentLength < 3) setWarning('Selection has to be at least 3 seconds long');
-    else if (fragmentLength > 60) setWarning('Selection has to be at most 60 seconds long');
+    if (fragmentLength < 3) setWarning(isPolishVersion ? 'Fragment musi mieć co najmniej 3 sekundy' : 'Selection has to be at least 3 seconds long');
+    else if (fragmentLength > 60) setWarning(isPolishVersion ? 'Fragment musi mieć co najwyżej 60 sekund' : 'Selection has to be at most 60 seconds long');
     else setWarning('');
   }, chosenFragment);
 
@@ -103,14 +103,24 @@ export default function ChoosingFragment() {
         <audio src={recordingURL} ref={audioRef} onEnded={() => {
           setPlaying(false);
           setCurrentTime(0);
-        }} onLoadedData={() => {
+        }} onDurationChange={(e) => {
           const length = Math.floor(audioRef.current?.duration ?? 0);
-          setAudioLength(length);
-          setChosenFragment([0, length]);
-          setAudioLoading(false);
+
+          if (length != Infinity) {
+            setAudioLength(length);
+            setChosenFragment([0, length]);
+            setAudioLoading(false);
+            e.currentTarget.currentTime = 0;
+          } else {
+            e.currentTarget.currentTime = 24 * 60 * 60;
+          }
         }} />
 
-        <Text strong style={{ display: 'block', textAlign: 'center' }}>To analyze the recording, select the relevant fragment using the slider below the spectrogram.</Text>
+        <Text strong style={{ display: 'block', textAlign: 'center' }}>
+          {isPolishVersion
+            ? 'By przeanalizować nagranie, wybierz najistotniejszy fragment, używając suwaka pod spektrogramem.'
+            : 'To analyze the recording, select the relevant fragment using the slider below the spectrogram.'}
+        </Text>
 
         <Spin spinning={spectrogramLoading}>
           <div id='spectrogramContainer' ref={spectrogramRef} style={{ margin: '20px 0', minHeight: '50px' }}></div>
@@ -128,7 +138,7 @@ export default function ChoosingFragment() {
           <Slider onChange={(newValue) => setVolume(newValue)} value={volume}
             min={0} max={100} tooltip={{ formatter: (value) => `${value}%` }}
             style={{ width: '100px' }} disabled={muted} />
-          
+
           <Button type='primary' disabled={warning !== ''} size='large'
             onClick={async () => {
               setAudioLoading(true);
@@ -142,7 +152,7 @@ export default function ChoosingFragment() {
                 encType: 'multipart/form-data',
               });
             }}>
-            Analyze recording</Button>
+            {isPolishVersion ? 'Analizuj nagranie' : 'Analyze recording'}</Button>
         </Space>
 
         {
