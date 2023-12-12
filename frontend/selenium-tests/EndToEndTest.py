@@ -59,7 +59,7 @@ class TestFindButton(unittest.TestCase):
             WebDriverWait(self.driver, 10)
             .until(
                 EC.visibility_of_element_located(
-                    (By.XPATH, f"//*[contains(text(), 'Probability: ')]")
+                    (By.XPATH, f"//*[contains(text(), 'Probability')]")
                 )
             )
             .text
