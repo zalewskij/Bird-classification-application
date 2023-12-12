@@ -5,16 +5,19 @@ import pandas as pd
 import torch
 
 from birdclassification.training.cnn_training_torch.CNN_model import CNNNetwork
+from CNN_binary_model import CNNBinaryNetwork
 from preprocessing import classify_audio, load_audio, preprocess_audio
 
 app = Flask(__name__)
 birds_list = None
 model = None
+binary_classifier = None
 DEVICE = None
 
 def setup_application():
   global birds_list
   global model
+  global binary_classifier
   global DEVICE
 
   CORS(app)
@@ -25,6 +28,10 @@ def setup_application():
   model = CNNNetwork().to(DEVICE)
   model.load_state_dict(torch.load(os.path.join(base_path, 'cnn_1.pt')))
   model.eval()
+
+  binary_classifier = CNNBinaryNetwork().to(DEVICE)
+  binary_classifier.load_state_dict(torch.load(os.path.join(base_path, 'binary_classifier.pt')))
+  binary_classifier.eval()
 
   df = pd.read_csv(os.path.join(base_path, 'bird-list-extended.csv'), delimiter=";")
   birds_list = df[df["Top 30"] == 1].sort_values(by='latin_name')
@@ -65,7 +72,7 @@ def analyze_audio():
       return { 'error': 'Audio is too short' }, 400
 
     input = preprocess_audio(y, start_time, end_time, sr=32000, n_fft=512, hop_length=384, length_in_seconds=3)
-    output = classify_audio(input, model, DEVICE)
+    output = classify_audio(input, model, binary_classifier, DEVICE)
     result = []
 
     for i, value in enumerate(output):
