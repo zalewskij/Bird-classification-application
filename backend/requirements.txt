@@ -1,0 +1,6 @@
+Flask==3.0.0
+Flask_Cors==4.0.0
+pandas==2.0.3
+pytest==7.4.3
+torch==2.1.1
+torchaudio==2.1.1
