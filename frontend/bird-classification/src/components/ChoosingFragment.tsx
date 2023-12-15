@@ -1,8 +1,8 @@
 import { useNavigate, useSubmit } from 'react-router-dom';
 import { Button, Card, Typography, Slider, Space, Alert, Spin } from 'antd';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { polishVersionState, recordingURLState } from '../atoms';
-import { useRecoilValue } from 'recoil';
+import { chosenFragmentState, polishVersionState, recordingState } from '../atoms';
+import { useRecoilState, useRecoilValue } from 'recoil';
 import { FaPause, FaPlay, FaVolumeHigh, FaVolumeLow, FaVolumeOff, FaVolumeXmark } from 'react-icons/fa6';
 import WaveSurfer from 'wavesurfer.js'
 import SpectrogramPlugin from 'wavesurfer.js/dist/plugins/spectrogram.js';
@@ -14,9 +14,11 @@ const displayTime = (seconds: number = 0) => `${Math.floor(seconds / 60)}:${(Mat
 export default function ChoosingFragment() {
   const navigate = useNavigate();
   const submit = useSubmit();
-  const recordingURL = useRecoilValue(recordingURLState);
+  const [recording, setRecording] = useRecoilState(recordingState);
   const isPolishVersion = useRecoilValue(polishVersionState);
+  const [savedChosenFragment, setSavedChosenFragment] = useRecoilState(chosenFragmentState);
 
+  const [recordingURL, setRecordingURL] = useState('');
   const [audioLoading, setAudioLoading] = useState(true);
   const [chosenFragment, setChosenFragment] = useState([0, 1]);
   const [warning, setWarning] = useState('');
@@ -45,17 +47,26 @@ export default function ChoosingFragment() {
   }, []);
 
   useEffect(() => {
-    if (recordingURL === '') {
+    if (recording === null) {
       navigate('/');
       return;
     }
 
+    setRecordingURL(URL.createObjectURL(recording));
+
     if (spectrogramRef.current)
       spectrogramRef.current.innerHTML = '';
+  }, []);
+
+  useEffect(() => {
+    if (recordingURL === '') return;
+    if (audioRef.current === null) return;
+
+    audioRef.current.src = recordingURL;
 
     const ws = WaveSurfer.create({
       container: '#spectrogramContainer',
-      url: recordingURL,
+      media: audioRef.current,
       sampleRate: 32000,
       interact: false,
       cursorWidth: 0,
@@ -72,7 +83,7 @@ export default function ChoosingFragment() {
     ws.on('ready', () => {
       setSpectrogramLoading(false);
     });
-  }, []);
+  }, [recordingURL]);
 
   useEffect(() => {
     if (playing) {
@@ -100,7 +111,7 @@ export default function ChoosingFragment() {
   return (
     <Spin spinning={audioLoading}>
       <Card className='choosing-fragment'>
-        <audio src={recordingURL} ref={audioRef} onEnded={() => {
+        <audio ref={audioRef} onEnded={() => {
           setPlaying(false);
           setCurrentTime(0);
         }} onDurationChange={(e) => {
@@ -108,7 +119,15 @@ export default function ChoosingFragment() {
 
           if (length != Infinity) {
             setAudioLength(length);
-            setChosenFragment([0, length]);
+
+            if (savedChosenFragment.length === 2) {
+              const chosenStart = savedChosenFragment[0] < 0 ? 0 : (savedChosenFragment[0] > length ? length : savedChosenFragment[0]);
+              const chosenEnd = savedChosenFragment[1] < 0 ? 0 : (savedChosenFragment[1] > length ? length : savedChosenFragment[1]);
+              setChosenFragment(chosenStart < chosenEnd ? [chosenStart, chosenEnd] : [chosenEnd, chosenStart]);
+            } else {
+              setChosenFragment([0, length]);
+            }
+
             setAudioLoading(false);
             e.currentTarget.currentTime = 0;
           } else {
@@ -126,8 +145,10 @@ export default function ChoosingFragment() {
           <div id='spectrogramContainer' ref={spectrogramRef} style={{ margin: '20px 0', minHeight: '50px' }}></div>
         </Spin>
 
-        <Slider onChange={(newValue: number[]) => setChosenFragment(newValue)}
-          min={0} max={audioLength} range={{ draggableTrack: true }} value={chosenFragment} tooltip={{ formatter: displayTime }} />
+        <Slider onChange={(newValue: number[]) => {
+          setChosenFragment(newValue);
+          setSavedChosenFragment(newValue);
+        }} min={0} max={audioLength} range={{ draggableTrack: true }} value={chosenFragment} tooltip={{ formatter: displayTime }} />
         <Slider onChange={onProgressChange} value={currentTime} min={0} max={audioLength} tooltip={{ formatter: displayTime }} />
 
         <Space className='playerControls'>
@@ -139,20 +160,28 @@ export default function ChoosingFragment() {
             min={0} max={100} tooltip={{ formatter: (value) => `${value}%` }}
             style={{ width: '100px' }} disabled={muted} />
 
-          <Button type='primary' disabled={warning !== ''} size='large'
-            onClick={async () => {
-              setAudioLoading(true);
-              let formData = new FormData();
-              formData.append('start', chosenFragment[0].toString());
-              formData.append('end', chosenFragment[1].toString());
-              formData.append('recording', await fetch(recordingURL).then(r => r.blob()));
-              submit(formData, {
-                method: 'POST',
-                action: '/results',
-                encType: 'multipart/form-data',
-              });
-            }}>
-            {isPolishVersion ? 'Analizuj nagranie' : 'Analyze recording'}</Button>
+          <Space wrap size='middle'>
+            <Button onClick={() => {
+              setRecording(null);
+              setSavedChosenFragment([]);
+              navigate('/');
+            }}>{isPolishVersion ? 'Zacznij od nowa' : 'Start from the beginning'}</Button>
+            <Button type='primary' disabled={warning !== ''} size='large'
+              onClick={async () => {
+                if (recording === null) return;
+                setAudioLoading(true);
+                let formData = new FormData();
+                formData.append('start', chosenFragment[0].toString());
+                formData.append('end', chosenFragment[1].toString());
+                formData.append('recording', recording);
+                submit(formData, {
+                  method: 'POST',
+                  action: '/results',
+                  encType: 'multipart/form-data',
+                });
+              }}>
+              {isPolishVersion ? 'Analizuj nagranie' : 'Analyze recording'}</Button>
+            </Space>
         </Space>
 
         {

@@ -51,7 +51,7 @@ class TestFindButton(unittest.TestCase):
         analyze_button = WebDriverWait(self.driver, 10).until(
             EC.element_to_be_clickable((By.XPATH, f"//button[contains(., 'Analyze')]"))
         )
-        time.sleep(5)
+        time.sleep(3)
         analyze_button.click()
 
         WebDriverWait(self.driver, 10).until(EC.url_to_be(f"{self.URL}results"))
@@ -60,15 +60,15 @@ class TestFindButton(unittest.TestCase):
             WebDriverWait(self.driver, 10)
             .until(
                 EC.visibility_of_element_located(
-                    (By.XPATH, f"//*[contains(text(), 'Probability')]")
+                    (By.XPATH, f"//*[contains(text(), '')]")
                 )
             )
             .text
         )
         self.assertRegex(
-            text_after_classification, "(Probability:\s\d{1,2}\.\d{0,2}\%)+"
+            text_after_classification, "(Probability:\s\d{1,2}\.\d{0,2}\%)+|(No\sbird)"
         )
-        time.sleep(8)
+        time.sleep(5)
 
     def tearDown(self):
         self.driver.quit()

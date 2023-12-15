@@ -54,7 +54,7 @@ header>* {
   flex-wrap: wrap;
 }
 
-.playerControls :last-child {
+.playerControls > :last-child {
   margin-left: auto;
 }
 

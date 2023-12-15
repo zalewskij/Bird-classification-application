@@ -1,20 +1,21 @@
 import { useEffect, useState } from 'react';
-import { useSetRecoilState } from 'recoil';
-import { useNavigate } from 'react-router-dom';
-import { Card, Space, Button, Upload, message, Typography, Alert } from 'antd';
+import { useRecoilState, useSetRecoilState } from 'recoil';
+import { Link, useNavigate } from 'react-router-dom';
+import { Card, Space, Button, Upload, message, Alert } from 'antd';
 import { FaUpload, FaRegCircleDot, FaStop, FaMicrophone } from 'react-icons/fa6';
-import { recordingURLState } from '../atoms';
+import { chosenFragmentState, recordingState } from '../atoms';
 import { polishVersionState } from '../atoms';
 import { useRecoilValue } from 'recoil';
-
-const { Text } = Typography;
 
 export default function MainPage() {
   const navigate = useNavigate();
   const isPolishVersion = useRecoilValue(polishVersionState);
-  const setRecordingURLState = useSetRecoilState(recordingURLState);
+  const [recording, setRecording] = useRecoilState(recordingState);
+  const setChosenFragment = useSetRecoilState(chosenFragmentState);
+
   const [recordingUnavailable, setRecordingUnavailable] = useState(false);
   const [ongoingRecording, setOngoingRecording] = useState(false);
+  const [firstThreeSeconds, setFirstThreeSeconds] = useState(true);
   const [recorder, setRecorder] = useState<MediaRecorder | null>(null);
 
   const validateFile = (file: File) => {
@@ -32,8 +33,8 @@ export default function MainPage() {
       return;
     }
 
-    const audioURL = window.URL.createObjectURL(file);
-    setRecordingURLState(audioURL);
+    setRecording(file);
+    setChosenFragment([]);
     navigate('/choosing_fragment');
   }
 
@@ -57,6 +58,9 @@ export default function MainPage() {
         let chunks: Blob[] = [];
 
         setOngoingRecording(true);
+        setTimeout(() => {
+          setFirstThreeSeconds(false);
+        }, 3000);
         setRecorder(mediaRecorder);
 
         mediaRecorder.start();
@@ -66,10 +70,9 @@ export default function MainPage() {
         });
 
         mediaRecorder.addEventListener('stop', () => {
-          // const blob = new Blob(chunks, { type: "audio/ogg; codecs=opus" });
           const blob = new Blob(chunks, { type: "audio/wav" });
-          const audioURL = window.URL.createObjectURL(blob);
-          setRecordingURLState(audioURL);
+          setRecording(blob);
+          setChosenFragment([]);
           navigate('/choosing_fragment');
         });
       })
@@ -81,9 +84,22 @@ export default function MainPage() {
   return (
     <Card>
       <Space direction='vertical' size='large' style={{ display: 'flex', alignItems: 'center', textAlign: 'center' }}>
-        <Text>
+        <Space direction='vertical'>
           {isPolishVersion ? 'By rozpoznać gatunek ptaka, zacznij nagrywanie lub wgraj plik.' : 'To classify a bird, start recording or upload a file.'}
-        </Text>
+          {
+            recording !== null &&
+            <Space wrap style={{ justifyContent: 'center' }}>
+              {isPolishVersion ? 'Poprzednie nagranie nie zostało sklasyfikowane.' : 'The previous recording has not been classified.'}
+              <Space>
+                <Link to='/choosing_fragment'><Button>{isPolishVersion ? 'Analizuj' : 'Analyze'}</Button></Link>
+                <Button danger onClick={() => {
+                  setRecording(null);
+                  setChosenFragment([]);
+                }}>{isPolishVersion ? 'Usuń' : 'Delete'}</Button>
+              </Space>
+            </Space>
+          }
+        </Space>
 
         <Upload showUploadList={false} maxCount={1} accept='audio/*'
           customRequest={({ file }) => uploadFile(file)}
@@ -107,11 +123,23 @@ export default function MainPage() {
             <div className='recording'>
               <FaMicrophone />
             </div>
-            <Button type='primary' icon={<FaStop />} size='large' onClick={() => {
-              if (recorder === null) return;
-              recorder.stop();
+            {
+              firstThreeSeconds
+                ? <Alert message={isPolishVersion ? 'Proszę czekać, nagranie powinno mieć co najmniej 3 sekundy' : 'Wait, the recording should be at least 3 seconds long'} type='warning' showIcon />
+                : <Button type='primary' icon={<FaStop />} size='large' onClick={() => {
+                    if (recorder === null) return;
+                    recorder.stop();
+                    setOngoingRecording(false);
+                    setFirstThreeSeconds(true);
+                  }}>Stop</Button>
+            }
+            <Button onClick={() => {
+              recorder?.pause();
+              setRecorder(null);
+
               setOngoingRecording(false);
-            }}>Stop</Button>
+              setFirstThreeSeconds(true);
+            }}>{isPolishVersion ? 'Anuluj' : 'Cancel'}</Button>
           </>
         }
       </Space>
