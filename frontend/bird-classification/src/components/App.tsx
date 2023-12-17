@@ -1,7 +1,7 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Outlet, useNavigate } from 'react-router-dom';
-import { Layout, theme, FloatButton, ConfigProvider } from 'antd';
-import { FaQuestion, FaSun, FaGear, FaMoon } from 'react-icons/fa6'
+import { Layout, theme, FloatButton, ConfigProvider, notification } from 'antd';
+import { FaQuestion, FaSun, FaGear, FaMoon, FaDownload } from 'react-icons/fa6'
 import { useRecoilState, useRecoilValue } from 'recoil';
 import { darkModeState, polishVersionState, primaryColorState } from '../atoms';
 import MenuHeader from './MenuHeader';
@@ -9,12 +9,53 @@ import MenuHeader from './MenuHeader';
 const { Content, Footer } = Layout;
 const { defaultAlgorithm, darkAlgorithm } = theme;
 
+interface BeforeInstallPromptEvent extends Event {
+  readonly platforms: string[];
+  readonly userChoice: Promise<{
+    outcome: "accepted" | "dismissed";
+    platform: string;
+  }>;
+  prompt(): Promise<void>;
+}
+
+declare global {
+  interface WindowEventMap {
+    beforeinstallprompt: BeforeInstallPromptEvent;
+  }
+}
+
 function App() {
   const [floatMenuOpen, setFloatMenuOpen] = useState(false);
   const [isDarkMode, setIsDarkMode] = useRecoilState(darkModeState);
   const [isPolishVersion, setIsPolishVersion] = useRecoilState(polishVersionState);
   const primaryColor = useRecoilValue(primaryColorState);
   const navigate = useNavigate();
+  const [api, contextHolder] = notification.useNotification();
+  const [installPrompt, setInstallPrompt] = useState<BeforeInstallPromptEvent | null>(null);
+  
+  useEffect(() => {
+    const openOfflineNotification = () => {
+      api.warning({
+        message: isPolishVersion ? 'Jesteś offline' : 'You are offline',
+        placement: 'bottom',
+      });
+    };
+    
+    const openOnlineNotification = () => {
+      api.info({
+        message: isPolishVersion ? 'Jesteś z powrotem online' : 'You are online again',
+        placement: 'bottom',
+      });
+    };
+    
+    window.addEventListener('online', openOnlineNotification);
+    window.addEventListener('offline', openOfflineNotification);
+
+    window.addEventListener('beforeinstallprompt', (event) => {
+      event.preventDefault();
+      setInstallPrompt(event);
+    });
+  }, []);
 
   return (
     <ConfigProvider theme={{
@@ -26,6 +67,7 @@ function App() {
       },
     }}>
       <Layout style={{ minHeight: '100vh' }}>
+        {contextHolder}
         <MenuHeader />
         <Content className='content'>
           <Outlet />
@@ -40,6 +82,11 @@ function App() {
             setIsPolishVersion(!isPolishVersion);
             setFloatMenuOpen(false);
           }} />
+          <FloatButton icon={<FaDownload />} onClick={async () => {
+            console.log(installPrompt);
+            if (installPrompt === null) return;
+            await installPrompt.prompt();
+          }} style={{ display: installPrompt !== null ? 'block' : 'none' }} />
           <FloatButton icon={<FaQuestion />} onClick={() => navigate('/about')} />
         </FloatButton.Group>
       </Layout>

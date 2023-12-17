@@ -71,6 +71,7 @@ export default function Results() {
         error
           ? <Result status='warning' title={error}
             extra={<Link to='/choosing_fragment'><Button type='primary'>{isPolishVersion ? 'Spróbuj ponownie' : 'Try again'}</Button></Link>}
+            subTitle={navigator.onLine === false ? (isPolishVersion ? 'Proszę sprawdzić połączenia z internetem' : 'Please check your internet connection') : ''}
           />
           : (results.length == 0
             ? <Result
