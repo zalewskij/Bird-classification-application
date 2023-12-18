@@ -1,7 +1,8 @@
-from birdclassification.preprocessing.spectrogram import generate_mel_spectrogram
-from birdclassification.preprocessing.utils import mix_down, right_pad
+from spectrogram import generate_mel_spectrogram
+from utils import mix_down, right_pad
 import torch
 import torchaudio
+
 
 def load_audio(audio_file, sr):
   try:
@@ -37,7 +38,6 @@ def classify_audio(input_tensors, model, binary_classifier, device):
         is_bird = binary_classifier(input)
         is_bird = softmax(is_bird)[0, 1]
 
-        print(is_bird)
         if is_bird > 0.9:
           output = model(input)
           output = softmax(output).squeeze()

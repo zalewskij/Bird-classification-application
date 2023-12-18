@@ -1,10 +1,11 @@
-import os
-from flask import Flask, request
+from pathlib import Path
+from flask import Flask, request, send_from_directory
 from flask_cors import CORS
 import pandas as pd
 import torch
+from socket import gethostname
 
-from birdclassification.training.cnn_training_torch.CNN_model import CNNNetwork
+from CNN_model import CNNNetwork
 from CNN_binary_model import CNNBinaryNetwork
 from preprocessing import classify_audio, load_audio, preprocess_audio
 
@@ -23,17 +24,20 @@ def setup_application():
   CORS(app)
 
   DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
-  base_path = os.path.realpath(os.path.dirname(__file__))
+  # base_path = os.path.realpath(os.path.dirname(__file__))
+  base_path = Path(__file__).resolve().parent.parent / 'data'
 
   model = CNNNetwork().to(DEVICE)
-  model.load_state_dict(torch.load(os.path.join(base_path, 'cnn_1.pt')))
+  # model.load_state_dict(torch.load(os.path.join(base_path, 'cnn_1.pt')))
+  model.load_state_dict(torch.load(base_path / 'cnn_1.pt', map_location=DEVICE))
   model.eval()
 
   binary_classifier = CNNBinaryNetwork().to(DEVICE)
-  binary_classifier.load_state_dict(torch.load(os.path.join(base_path, 'binary_classifier.pt')))
+  # binary_classifier.load_state_dict(torch.load(os.path.join(base_path, 'binary_classifier.pt')))
+  binary_classifier.load_state_dict(torch.load(base_path / 'binary_classifier.pt', map_location=DEVICE))
   binary_classifier.eval()
 
-  df = pd.read_csv(os.path.join(base_path, 'bird-list-extended.csv'), delimiter=";")
+  df = pd.read_csv(base_path / 'bird-list-extended.csv', delimiter=";")
   birds_list = df[df["Top 30"] == 1].sort_values(by='latin_name')
 
 @app.route('/analyze-audio', methods=['POST'])
@@ -88,6 +92,17 @@ def analyze_audio():
   except Exception as e:
     return { 'error': str(e) }, 400
 
+@app.route('/')
+def serve_index():
+    directory = Path(__file__).resolve().parent.parent / 'public'
+    return send_from_directory(directory, 'index.html')
+
+@app.route('/<path:filename>')
+def serve_files(filename):
+    directory = Path(__file__).resolve().parent.parent / 'public'
+    return send_from_directory(directory, filename)
+
 if __name__ == '__main__':
   setup_application()
-  app.run(debug=True)
+  if 'liveconsole' not in gethostname():
+    app.run(host='0.0.0.0', port=80, debug=True)
