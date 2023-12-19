@@ -7,7 +7,8 @@ import { chosenFragmentState, polishVersionState, primaryColorState, recordingSt
 
 const { Title, Text } = Typography;
 
-const BACKEND_URL = 'http://127.0.0.1:5000/analyze-audio';
+// const BACKEND_URL = 'http://127.0.0.1:5000/analyze-audio';
+const BACKEND_URL = 'https://birdclassification.pythonanywhere.com/analyze-audio';
 
 export async function action({ request }: ActionFunctionArgs) {
   const formData = await request.formData();

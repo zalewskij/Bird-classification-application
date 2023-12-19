@@ -21,19 +21,16 @@ def setup_application():
   global binary_classifier
   global DEVICE
 
-  CORS(app, resources={"/analyze-audio": {"origins": "http://localhost:5173"}})
+  CORS(app)
 
   DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
-  # base_path = os.path.realpath(os.path.dirname(__file__))
   base_path = Path(__file__).resolve().parent.parent / 'data'
 
   model = CNNNetwork().to(DEVICE)
-  # model.load_state_dict(torch.load(os.path.join(base_path, 'cnn_1.pt')))
   model.load_state_dict(torch.load(base_path / 'cnn_1.pt', map_location=DEVICE))
   model.eval()
 
   binary_classifier = CNNBinaryNetwork().to(DEVICE)
-  # binary_classifier.load_state_dict(torch.load(os.path.join(base_path, 'binary_classifier.pt')))
   binary_classifier.load_state_dict(torch.load(base_path / 'binary_classifier.pt', map_location=DEVICE))
   binary_classifier.eval()
 
@@ -105,5 +102,4 @@ def serve_files(filename):
 if __name__ == '__main__':
   setup_application()
   if 'liveconsole' not in gethostname():
-    # app.run(host='0.0.0.0', port=80)
     app.run(host='0.0.0.0', debug=True)
