@@ -28,7 +28,7 @@ The backend is running on [Python](https://www.python.org/downloads/), using [Fl
 - pytest (version 7.1.2)
 - torch (version 1.11.0+cpu)
 
-They can be be installed using `pip`.
+They can be installed using `pip`.
 
 ### Starting the application
 - To start the application, run `python application.py` in the `backend/api` directory.
