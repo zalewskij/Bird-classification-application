@@ -3,39 +3,27 @@ from flask import Flask, request, send_from_directory
 from flask_cors import CORS
 import pandas as pd
 import torch
-from socket import gethostname
 
 from CNN_model import CNNNetwork
 from CNN_binary_model import CNNBinaryNetwork
 from preprocessing import classify_audio, load_audio, preprocess_audio
 
 app = Flask(__name__)
-birds_list = None
-model = None
-binary_classifier = None
-DEVICE = None
+CORS(app)
 
-def setup_application():
-  global birds_list
-  global model
-  global binary_classifier
-  global DEVICE
+DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
+base_path = Path(__file__).resolve().parent.parent / 'data'
 
-  CORS(app)
+model = CNNNetwork().to(DEVICE)
+model.load_state_dict(torch.load(base_path / 'cnn_1.pt', map_location=DEVICE))
+model.eval()
 
-  DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
-  base_path = Path(__file__).resolve().parent.parent / 'data'
+binary_classifier = CNNBinaryNetwork().to(DEVICE)
+binary_classifier.load_state_dict(torch.load(base_path / 'binary_classifier.pt', map_location=DEVICE))
+binary_classifier.eval()
 
-  model = CNNNetwork().to(DEVICE)
-  model.load_state_dict(torch.load(base_path / 'cnn_1.pt', map_location=DEVICE))
-  model.eval()
-
-  binary_classifier = CNNBinaryNetwork().to(DEVICE)
-  binary_classifier.load_state_dict(torch.load(base_path / 'binary_classifier.pt', map_location=DEVICE))
-  binary_classifier.eval()
-
-  df = pd.read_csv(base_path / 'bird-list-extended.csv', delimiter=";")
-  birds_list = df[df["Top 30"] == 1].sort_values(by='latin_name')
+df = pd.read_csv(base_path / 'bird-list-extended.csv', delimiter=";")
+birds_list = df[df["Top 30"] == 1].sort_values(by='latin_name')
 
 @app.route('/analyze-audio', methods=['POST'])
 def analyze_audio():
@@ -100,6 +88,4 @@ def serve_files(filename):
     return send_from_directory(directory, filename)
 
 if __name__ == '__main__':
-  setup_application()
-  if 'liveconsole' not in gethostname():
-    app.run(host='0.0.0.0', debug=True)
+  app.run(host='0.0.0.0', debug=True)
