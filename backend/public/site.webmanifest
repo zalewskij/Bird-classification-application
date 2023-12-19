@@ -1,0 +1,36 @@
+{
+  "name": "Bird classification",
+  "short_name": "Bird classification",
+  "description": "An app for classifying bird species based on recordings",
+  "display": "standalone",
+  "start_url": "/",
+  "orientation": "portrait",
+  "theme_color": "#3c716b",
+  "background_color": "#f5f5f5",
+  "icons": [
+    {
+      "src": "/manifest-icon-192.maskable.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/manifest-icon-192.maskable.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/manifest-icon-512.maskable.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/manifest-icon-512.maskable.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}
