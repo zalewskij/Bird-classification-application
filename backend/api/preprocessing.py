@@ -28,18 +28,18 @@ def classify_audio(input_tensors, model, binary_classifier, device):
   with torch.no_grad():
       for input_tensor in input_tensors:
         input = torch.unsqueeze(input_tensor, dim=0).to(device)
-        # is_bird = binary_classifier(input)
-        # print("Is bird", is_bird)
-        # is_bird = softmax(is_bird)[0, 1]
+        is_bird = binary_classifier(input)
+        print("Is bird", is_bird)
+        is_bird = softmax(is_bird)[0, 1]
 
-        # if is_bird > 0.9:
-        print("Before model")
-        output = model(input)
-        print("Model done")
-        output = softmax(output).squeeze()
-        cumulative_output = torch.maximum(output, cumulative_output)
-        # else:
-        #   not_recognised += 1
+        if is_bird > 0.9:
+          print("Before model")
+          output = model(input)
+          print("Model done")
+          output = softmax(output).squeeze()
+          cumulative_output = torch.maximum(output, cumulative_output)
+        else:
+          not_recognised += 1
 
   cumulative_output.divide_(cumulative_output.sum())
   return cumulative_output.tolist()

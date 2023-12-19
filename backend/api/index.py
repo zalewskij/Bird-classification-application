@@ -8,6 +8,7 @@ from CNN_model import CNNNetwork
 from CNN_binary_model import CNNBinaryNetwork
 from preprocessing import classify_audio, load_audio, preprocess_audio
 
+torch.set_num_threads(1)
 app = Flask(__name__)
 CORS(app)
 
