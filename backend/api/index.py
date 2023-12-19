@@ -56,23 +56,13 @@ def analyze_audio():
     return { 'error': 'Audio is too long' }, 400
 
   try:
-    print("DEBUGGING STARTS HERE")
-    print(base_path, DEVICE)
-
     y, real_duration = load_audio(audio_file, sr=32000)
-
-    print("AUDIO LOADED")
 
     if real_duration < end_time or real_duration < 3:
       return { 'error': 'Audio is too short' }, 400
 
     input = preprocess_audio(y, start_time, end_time, sr=32000, n_fft=512, hop_length=384, length_in_seconds=3)
-
-    print("AUDIO PREPROCESSED")
-
     output = classify_audio(input, model, binary_classifier, DEVICE)
-
-    print("OUTPUT", output)
 
     result = []
 

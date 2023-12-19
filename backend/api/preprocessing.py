@@ -21,6 +21,9 @@ def preprocess_audio(waveform, start_time, end_time, sr, n_fft, hop_length, leng
   return list(map(lambda spectrogram: torch.unsqueeze(spectrogram, dim=0), spectrograms))
 
 def classify_audio(input_tensors, model, binary_classifier, device):
+  print("START CLASSYFYING")
+  print(input_tensors, model, binary_classifier, device)
+
   softmax = torch.nn.Softmax(dim=1)
   cumulative_output = torch.zeros(30).to(device)
   not_recognised = 0
@@ -28,11 +31,14 @@ def classify_audio(input_tensors, model, binary_classifier, device):
   with torch.no_grad():
       for input_tensor in input_tensors:
         input = torch.unsqueeze(input_tensor, dim=0).to(device)
+        print("Before binary", input)
         is_bird = binary_classifier(input)
+        print("Is bird", is_bird)
         is_bird = softmax(is_bird)[0, 1]
 
         if is_bird > 0.9:
           output = model(input)
+          print("Model done")
           output = softmax(output).squeeze()
           cumulative_output = torch.maximum(output, cumulative_output)
         else:
