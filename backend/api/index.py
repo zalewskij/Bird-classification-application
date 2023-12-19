@@ -1,5 +1,5 @@
 from pathlib import Path
-from flask import Flask, jsonify, request, send_from_directory
+from flask import Flask, request, send_from_directory
 from flask_cors import CORS
 import pandas as pd
 import torch
@@ -21,7 +21,7 @@ def setup_application():
   global binary_classifier
   global DEVICE
 
-  CORS(app, resources={r"/*": {"origins": "*"}})
+  CORS(app, resources={"/analyze-audio": {"origins": "http://localhost:5173"}})
 
   DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
   # base_path = os.path.realpath(os.path.dirname(__file__))
@@ -85,11 +85,9 @@ def analyze_audio():
         bird['probability'] = value
         result.append(bird)
 
-    response = jsonify({
+    return {
       'results': result
-    })
-    response.headers.add('Access-Control-Allow-Origin', '*')
-    return response
+    }
 
   except Exception as e:
     return { 'error': str(e) }, 400
