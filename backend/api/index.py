@@ -21,7 +21,7 @@ def setup_application():
   global binary_classifier
   global DEVICE
 
-  CORS(app)
+  CORS(app, resources={r"/*": {"origins": "*"}})
 
   DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
   # base_path = os.path.realpath(os.path.dirname(__file__))
