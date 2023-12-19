@@ -1,6 +1,7 @@
 import librosa
 import numpy as np
-import torchaudio
+# import torchaudio
+import torch
 
 def generate_mel_spectrogram(y, sr, n_fft, hop_length, number_of_bands = 64, fmin = 150, fmax = 15000):
     """
@@ -27,7 +28,10 @@ def generate_mel_spectrogram(y, sr, n_fft, hop_length, number_of_bands = 64, fmi
     Tensor
         Spectrogram represented as a 2d array
     """
-    transform = torchaudio.transforms.MelSpectrogram(sample_rate=sr, n_fft=n_fft, hop_length=hop_length, f_min=fmin, f_max=fmax, n_mels=number_of_bands)
-    M = transform(y)[0]
+    # transform = torchaudio.transforms.MelSpectrogram(sample_rate=sr, n_fft=n_fft, hop_length=hop_length, f_min=fmin, f_max=fmax, n_mels=number_of_bands)
+    # M = transform(y)[0]
+    # M_db = librosa.power_to_db(M, ref=np.max)
+    # return M_db
+    M = librosa.feature.melspectrogram(y=y, sr=sr, n_fft=n_fft, hop_length=hop_length, n_mels=number_of_bands, fmin=fmin, fmax=fmax)
     M_db = librosa.power_to_db(M, ref=np.max)
-    return M_db
+    return torch.from_numpy(M_db)
