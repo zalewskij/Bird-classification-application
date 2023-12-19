@@ -1,5 +1,5 @@
 from pathlib import Path
-from flask import Flask, request, send_from_directory
+from flask import Flask, jsonify, request, send_from_directory
 from flask_cors import CORS
 import pandas as pd
 import torch
@@ -85,9 +85,11 @@ def analyze_audio():
         bird['probability'] = value
         result.append(bird)
 
-    return {
+    response = jsonify({
       'results': result
-    }
+    })
+    response.headers.add('Access-Control-Allow-Origin', '*')
+    return response
 
   except Exception as e:
     return { 'error': str(e) }, 400
@@ -105,4 +107,5 @@ def serve_files(filename):
 if __name__ == '__main__':
   setup_application()
   if 'liveconsole' not in gethostname():
-    app.run(host='0.0.0.0', port=80, debug=True)
+    # app.run(host='0.0.0.0', port=80)
+    app.run(host='0.0.0.0', debug=True)
