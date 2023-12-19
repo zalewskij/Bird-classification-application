@@ -7,7 +7,7 @@ def load_audio(audio_file, sr):
     y, sr = librosa.load(audio_file, sr=sr)
     real_duration = len(y) / sr
     return y, real_duration
-  except Exception as e:
+  except Exception:
     raise Exception('Invalid audio format')
 
 def preprocess_audio(waveform, start_time, end_time, sr, n_fft, hop_length, length_in_seconds):
@@ -29,13 +29,10 @@ def classify_audio(input_tensors, model, binary_classifier, device):
       for input_tensor in input_tensors:
         input = torch.unsqueeze(input_tensor, dim=0).to(device)
         is_bird = binary_classifier(input)
-        print("Is bird", is_bird)
         is_bird = softmax(is_bird)[0, 1]
 
         if is_bird > 0.9:
-          print("Before model")
           output = model(input)
-          print("Model done")
           output = softmax(output).squeeze()
           cumulative_output = torch.maximum(output, cumulative_output)
         else:
