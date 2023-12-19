@@ -27,7 +27,7 @@ export default function About() {
       The data used for training the machine learning model comes from the <Link href='https://xeno-canto.org/'>xeno-canto</Link> database. The birds' photos comes from <Link href='https://commons.wikimedia.org/'>Wikimedia Commons</Link>.
     </Paragraph>
     <Paragraph>
-      The application was created using <Link href='https://react.dev/'>React</Link> and <Link href='https://ant.design/'>Ant Design</Link>. Spectrograms are generated using <Link href='https://wavesurfer.xyz/'>wavesurfer.js</Link>. The machine learing model was creaated using <Link href='https://pytorch.org/'>PyTorch</Link> and <Link href='https://librosa.org/'>Librosa</Link>.
+      The application was created using <Link href='https://react.dev/'>React</Link> and <Link href='https://ant.design/'>Ant Design</Link>. Spectrograms are generated using <Link href='https://wavesurfer.xyz/'>wavesurfer.js</Link>. The machine learing model was created using <Link href='https://pytorch.org/'>PyTorch</Link> and <Link href='https://librosa.org/'>Librosa</Link>.
     </Paragraph>
   </Card>;
 

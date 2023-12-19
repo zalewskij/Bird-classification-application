@@ -20,15 +20,16 @@ To use the frontend, it is neccessary to start the backend, and set the correct 
 
 ## Backend
 The backend is running on [Python](https://www.python.org/downloads/), using [Flask](https://flask.palletsprojects.com/en/3.0.x/installation/) for the web server and [Pytorch](https://pytorch.org/) for running the machine learning model. The application uses the following packages:
-- Flask
-- Flask_Cors
-- pandas
-- pytest
-- torch
-- torchaudio
+- Flask (version 2.1.2)
+- Flask_Cors (version 4.0.0)
+- librosa (version 0.10.1)
+- numpy (version 1.21.6)
+- pandas (version 1.3.5)
+- pytest (version 7.1.2)
+- torch (version 1.11.0+cpu)
 
-They can be be installed using `pip`. The application also uses python package `birdclassification`, available in `Bird-classification-model` repository.
+They can be be installed using `pip`.
 
 ### Starting the application
-- To start the application, run `python application.py` in the `backend` directory.
+- To start the application, run `python application.py` in the `backend/api` directory.
 - To start backend tests, run `pytest` in the `backend` directory.
