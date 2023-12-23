@@ -73,6 +73,10 @@ export default function MainPage() {
           const blob = new Blob(chunks, { type: "audio/wav" });
           setRecording(blob);
           setChosenFragment([]);
+
+          const tracks = stream.getTracks();
+          tracks.forEach(track => track.stop());
+
           navigate('/choosing_fragment');
         });
       })
@@ -125,7 +129,7 @@ export default function MainPage() {
             </div>
             {
               firstThreeSeconds
-                ? <Alert message={isPolishVersion ? 'Proszę czekać, nagranie powinno mieć co najmniej 3 sekundy' : 'Wait, the recording should be at least 3 seconds long'} type='warning' showIcon />
+                ? <Alert message={isPolishVersion ? 'Proszę czekać, nagranie powinno mieć co najmniej 3 sekundy' : 'Please wait, the recording should be at least 3 seconds long'} type='warning' showIcon />
                 : <Button type='primary' icon={<FaStop />} size='large' onClick={() => {
                     if (recorder === null) return;
                     recorder.stop();

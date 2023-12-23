@@ -47,7 +47,7 @@ export default function Results() {
     if (actionData && actionData.error) {
       console.error(actionData);
       setError(actionData.serverError
-        ? (isPolishVersion ? 'Wystąpił błąd podczas łączenia z serwerem.' : 'An error has occured while connecting to the server')
+        ? (isPolishVersion ? 'Wystąpił błąd podczas łączenia z serwerem.' : 'An error occured while connecting to the server')
         : actionData.error);
     } else if (actionData && actionData.results) {
       setResults(actionData.results.sort((a, b) => b.probability - a.probability));
@@ -78,11 +78,20 @@ export default function Results() {
             ? <Result
               icon={<FaRegCircleQuestion style={{ fontSize: '5rem', color: primaryColor }} />}
               title={isPolishVersion ? 'Nie rozponano żadnego gatunku ptaka w tym nagraniu.' : 'No bird species was recognized in this recording.'}
-              extra={<Link to='/choosing_fragment'>
+              extra={<Space direction="vertical">
+              <Link to='/choosing_fragment'>
                 <Button style={{ whiteSpace: 'normal', height: 'fit-content' }}>
-                  {isPolishVersion ? 'Spróbuj z innym fragmentem nagrania' : 'Try with different fragment of the recording'}
+                  {isPolishVersion ? 'Spróbuj z innym fragmentem nagrania' : 'Try with a different fragment of the recording'}
                 </Button>
-              </Link>}
+              </Link>
+              <Button style={{ whiteSpace: 'normal', height: 'fit-content' }} onClick={() => {
+                  setRecording(null);
+                  setChosenFragment([]);
+                  navigate('/');
+                }}>
+                {isPolishVersion ? 'Zacznij od nowa' : 'Start from the beginning'}
+              </Button>
+              </Space>}
             />
             : <List
               itemLayout="vertical"
@@ -92,7 +101,7 @@ export default function Results() {
               renderItem={(result) => (
                 <List.Item key={result.english_name} className='result'>
                   <Space direction='vertical'>
-                    <Title level={result.english_name === mostProbableResult ? 2 : 4} style={{ textTransform: 'capitalize' }}>
+                    <Title level={result.english_name === mostProbableResult ? 2 : 4}>
                       {isPolishVersion ? result.polish_name : result.english_name}
                     </Title>
                     <Text italic strong>

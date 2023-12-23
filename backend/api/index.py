@@ -23,8 +23,7 @@ binary_classifier = CNNBinaryNetwork().to(DEVICE)
 binary_classifier.load_state_dict(torch.load(base_path / 'binary_classifier.pt', map_location=DEVICE))
 binary_classifier.eval()
 
-df = pd.read_csv(base_path / 'bird-list-extended.csv', delimiter=";")
-birds_list = df[df["Top 30"] == 1].sort_values(by='latin_name')
+birds_list = pd.read_csv(base_path / 'bird-list-top30.csv', delimiter=";").sort_values(by='latin_name')
 
 @app.route('/analyze-audio', methods=['POST'])
 def analyze_audio():
