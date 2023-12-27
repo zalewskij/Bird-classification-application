@@ -3,12 +3,10 @@ import { Card, List, Space, Typography, Image, Result, Popover, Button } from 'a
 import { FaInfo, FaRegCircleQuestion } from 'react-icons/fa6';
 import { useEffect, useState } from 'react';
 import { useRecoilValue, useSetRecoilState } from 'recoil';
-import { chosenFragmentState, polishVersionState, primaryColorState, recordingState } from '../atoms';
+import { chosenFragmentState, polishVersionState, recordingState } from '../atoms';
+import { BACKEND_URL, PRIMARY_COLOR } from '../constants';
 
 const { Title, Text } = Typography;
-
-// const BACKEND_URL = 'http://127.0.0.1:5000/analyze-audio';
-const BACKEND_URL = 'https://birdclassification.pythonanywhere.com/analyze-audio';
 
 export async function action({ request }: ActionFunctionArgs) {
   const formData = await request.formData();
@@ -36,7 +34,6 @@ export default function Results() {
   const isPolishVersion = useRecoilValue(polishVersionState);
   const setRecording = useSetRecoilState(recordingState);
   const setChosenFragment = useSetRecoilState(chosenFragmentState);
-  const primaryColor = useRecoilValue(primaryColorState);
 
   const actionData = useActionData() as { results: ResultType[] | undefined, error: string | undefined, serverError: boolean | undefined };
   const [results, setResults] = useState<ResultType[]>([]);
@@ -76,7 +73,7 @@ export default function Results() {
           />
           : (results.length == 0
             ? <Result
-              icon={<FaRegCircleQuestion style={{ fontSize: '5rem', color: primaryColor }} />}
+              icon={<FaRegCircleQuestion style={{ fontSize: '5rem', color: PRIMARY_COLOR }} />}
               title={isPolishVersion ? 'Nie rozponano żadnego gatunku ptaka w tym nagraniu.' : 'No bird species was recognized in this recording.'}
               extra={<Space direction="vertical">
               <Link to='/choosing_fragment'>

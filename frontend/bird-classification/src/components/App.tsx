@@ -2,9 +2,10 @@ import { useEffect, useState } from 'react';
 import { Outlet, useNavigate } from 'react-router-dom';
 import { Layout, theme, FloatButton, ConfigProvider, notification } from 'antd';
 import { FaQuestion, FaSun, FaGear, FaMoon, FaDownload } from 'react-icons/fa6'
-import { useRecoilState, useRecoilValue } from 'recoil';
-import { darkModeState, polishVersionState, primaryColorState } from '../atoms';
+import { useRecoilState } from 'recoil';
+import { darkModeState, polishVersionState } from '../atoms';
 import MenuHeader from './MenuHeader';
+import { PRIMARY_COLOR } from '../constants';
 
 const { Content, Footer } = Layout;
 const { defaultAlgorithm, darkAlgorithm } = theme;
@@ -28,7 +29,6 @@ function App() {
   const [floatMenuOpen, setFloatMenuOpen] = useState(false);
   const [isDarkMode, setIsDarkMode] = useRecoilState(darkModeState);
   const [isPolishVersion, setIsPolishVersion] = useRecoilState(polishVersionState);
-  const primaryColor = useRecoilValue(primaryColorState);
   const navigate = useNavigate();
   const [api, contextHolder] = notification.useNotification();
   const [installPrompt, setInstallPrompt] = useState<BeforeInstallPromptEvent | null>(null);
@@ -61,8 +61,8 @@ function App() {
     <ConfigProvider theme={{
       algorithm: isDarkMode ? darkAlgorithm : defaultAlgorithm,
       token: {
-        colorPrimary: primaryColor,
-        colorInfo: primaryColor,
+        colorPrimary: PRIMARY_COLOR,
+        colorInfo: PRIMARY_COLOR,
         colorBgBase: isDarkMode ? '#101010' : '#ffffff',
       },
     }}>

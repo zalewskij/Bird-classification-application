@@ -4,7 +4,7 @@ import react from '@vitejs/plugin-react';
 
 const manifestForPlugIn: Partial<VitePWAOptions> = {
   registerType: 'prompt',
-  includeAssets: ['src/assets/logo128.ong', 'public/logo.svg'],
+  includeAssets: ['src/assets/logo128.png', 'public/logo.svg'],
   manifest: {
     name: 'Bird classification',
     short_name: 'Bird classification',
