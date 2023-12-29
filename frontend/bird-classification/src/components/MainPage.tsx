@@ -105,7 +105,7 @@ export default function MainPage() {
           }
         </Space>
 
-        <Upload showUploadList={false} maxCount={1} accept='audio/*'
+        <Upload showUploadList={false} maxCount={1} accept='audio/mpeg,audio/ogg,audio/wav,audio/webm,audio/aac,audio/midi,audio/x-midi,audio/opus'
           customRequest={({ file }) => uploadFile(file)}
           beforeUpload={validateFile}>
           <Button type='primary' icon={<FaUpload />} size='large' disabled={ongoingRecording}>

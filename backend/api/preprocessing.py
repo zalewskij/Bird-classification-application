@@ -38,5 +38,7 @@ def classify_audio(input_tensors, model, binary_classifier, device):
         else:
           not_recognised += 1
 
-  cumulative_output.divide_(cumulative_output.sum())
+  if cumulative_output.sum() > 0:
+    cumulative_output.divide_(cumulative_output.sum())
+
   return cumulative_output.tolist()
