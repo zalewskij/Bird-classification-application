@@ -2,7 +2,7 @@
 This repository contains the application for the engineering thesis. The application consists of two parts: frontend and backend.
 
 ## Frontend
-The frontend is running on [React](https://react.dev/) with [TypeScript](https://www.typescriptlang.org/), and is using [Vite](https://vitejs.dev/). The design is based on [Ant Design](https://ant.design/).
+The frontend is running on [React](https://react.dev/) with [TypeScript](https://www.typescriptlang.org/) and is using [Vite](https://vitejs.dev/). The design is based on [Ant Design](https://ant.design/).
 
 ### Installation
 To run the application in development mode, [node.js](https://nodejs.org/en/download) is necessary.
@@ -11,12 +11,12 @@ Run `npm install` in the `frontend/bird-classification` directory to install all
 ### Starting the application
 All commands should be run in the `frontend/bird-classification` directory.
 
-- To start development server, run `npm run dev`.
+To start the development server, run `npm run dev`.
 - To locally preview production build, run `npm run preview`.
 - To build for production, run `npm run build`.
-- To run frontend unit tests, run `npm run test`
+- To run frontend unit tests, run `npm run test`.
 
-To use the frontend, it is necessary to start the backend, and set the correct backend address in file `frontend/bird-classification/src/components/Results.tsx`, e.g. `const BACKEND_URL = 'http://127.0.0.1:5000/analyze-audio';`.
+To use the frontend, it is necessary to start the backend and set the correct backend address in file `frontend/bird-classification/src/constants.ts`, e.g., `export const BACKEND_URL = 'http://127.0.0.1:5000/analyze-audio';`.
 
 ## Backend
 The backend is running on [Python](https://www.python.org/downloads/), using [Flask](https://flask.palletsprojects.com/en/3.0.x/installation/) for the web server and [Pytorch](https://pytorch.org/) for running the machine learning model. The application uses the following packages:

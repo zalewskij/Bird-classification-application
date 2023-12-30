@@ -16,11 +16,6 @@ const localStorageEffect = <T>(key: string): AtomEffect<T> => ({setSelf, onSet})
   });
 };
 
-export const primaryColorState = atom<string>({
-  key: 'primaryColorState',
-  default: '#3c716b',
-});
-
 export const darkModeState = atom<boolean>({
   key: 'darkModeState',
   default: false,

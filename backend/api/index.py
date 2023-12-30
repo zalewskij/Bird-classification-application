@@ -8,33 +8,22 @@ from CNN_model import CNNNetwork
 from CNN_binary_model import CNNBinaryNetwork
 from preprocessing import classify_audio, load_audio, preprocess_audio
 
+torch.set_num_threads(1)
 app = Flask(__name__)
-birds_list = None
-model = None
-binary_classifier = None
-DEVICE = None
+CORS(app)
 
-def setup_application():
-  global birds_list
-  global model
-  global binary_classifier
-  global DEVICE
+DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
+base_path = Path(__file__).resolve().parent.parent / 'data'
 
-  CORS(app)
+model = CNNNetwork().to(DEVICE)
+model.load_state_dict(torch.load(base_path / 'cnn_1.pt', map_location=DEVICE))
+model.eval()
 
-  DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
-  base_path = Path(__file__).resolve().parent.parent / 'data'
+binary_classifier = CNNBinaryNetwork().to(DEVICE)
+binary_classifier.load_state_dict(torch.load(base_path / 'binary_classifier.pt', map_location=DEVICE))
+binary_classifier.eval()
 
-  model = CNNNetwork().to(DEVICE)
-  model.load_state_dict(torch.load(base_path / 'cnn_1.pt', map_location=DEVICE))
-  model.eval()
-
-  binary_classifier = CNNBinaryNetwork().to(DEVICE)
-  binary_classifier.load_state_dict(torch.load(base_path / 'binary_classifier.pt', map_location=DEVICE))
-  binary_classifier.eval()
-
-  df = pd.read_csv(base_path / 'bird-list-extended.csv', delimiter=";")
-  birds_list = df[df["Top 30"] == 1].sort_values(by='latin_name')
+birds_list = pd.read_csv(base_path / 'bird-list-top30.csv', delimiter=";").sort_values(by='latin_name')
 
 @app.route('/analyze-audio', methods=['POST'])
 def analyze_audio():
@@ -68,11 +57,13 @@ def analyze_audio():
 
   try:
     y, real_duration = load_audio(audio_file, sr=32000)
+
     if real_duration < end_time or real_duration < 3:
       return { 'error': 'Audio is too short' }, 400
 
     input = preprocess_audio(y, start_time, end_time, sr=32000, n_fft=512, hop_length=384, length_in_seconds=3)
     output = classify_audio(input, model, binary_classifier, DEVICE)
+
     result = []
 
     for i, value in enumerate(output):
@@ -99,5 +90,4 @@ def serve_files(filename):
     return send_from_directory(directory, filename)
 
 if __name__ == '__main__':
-  setup_application()
   app.run(host='0.0.0.0', debug=True)
