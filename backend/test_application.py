@@ -4,8 +4,8 @@ import pytest
 import io
 import torch
 
-from preprocessing import load_audio, preprocess_audio
-from application import app, setup_application
+from api.preprocessing import load_audio, preprocess_audio
+from api.index import app, setup_application
 
 FILE1 = '../../tests/sounds/cygnus_olor_1.wav'
 FILE2 = '../../tests/sounds/cygnus_olor_2.mp3'
@@ -59,7 +59,7 @@ def test_analyze_audio_wrong_request_format(client: FlaskClient):
 
 def test_analyze_audio_wrong_audio_format(client: FlaskClient):
     response = client.post('/analyze-audio', data={
-        'recording': read_audio_file('preprocessing.py'),
+        'recording': read_audio_file('test_application.py'),
         'start': 3,
         'end': 13
     })
