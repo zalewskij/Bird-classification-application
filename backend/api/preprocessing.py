@@ -22,23 +22,23 @@ def preprocess_audio(waveform, start_time, end_time, sr, n_fft, hop_length, leng
 
 def classify_audio(input_tensors, model, binary_classifier, device):
   softmax = torch.nn.Softmax(dim=1)
-  cumulative_output = torch.zeros(30).to(device)
-  not_recognised = 0
+  outputs = []
 
   with torch.no_grad():
-      for input_tensor in input_tensors:
-        input = torch.unsqueeze(input_tensor, dim=0).to(device)
-        is_bird = binary_classifier(input)
-        is_bird = softmax(is_bird)[0, 1]
+    for input_tensor in input_tensors:
+      input = torch.unsqueeze(input_tensor, dim=0).to(device)
+      is_bird = binary_classifier(input)
+      is_bird = softmax(is_bird)[0, 1]
 
-        if is_bird > 0.9:
-          output = model(input)
-          output = softmax(output).squeeze()
-          cumulative_output = torch.maximum(output, cumulative_output)
-        else:
-          not_recognised += 1
+      output = model(input)
+      output = softmax(output).squeeze()
 
-  if cumulative_output.sum() > 0:
-    cumulative_output.divide_(cumulative_output.sum())
+      outputs.append((output, is_bird))
 
-  return cumulative_output.tolist()
+  results = [result[0] * 5 * (result[1] - 0.8) for result in outputs if result[1] >= 0.8]
+
+  if len(results) == 0:
+    results = [result[0] * 2 * (result[1] - 0.5) for result in outputs if result[1] >= 0.5]
+
+  results = torch.stack(results).sum(dim=0).div(len(results)) if len(results) > 0 else torch.zeros(30)
+  return results.tolist()
