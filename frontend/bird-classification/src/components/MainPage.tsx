@@ -16,6 +16,7 @@ export default function MainPage() {
   const [recordingUnavailable, setRecordingUnavailable] = useState(false);
   const [ongoingRecording, setOngoingRecording] = useState(false);
   const [firstThreeSeconds, setFirstThreeSeconds] = useState(true);
+  const [firstThreeSecondsTimeout, setFirstThreeSecondsTimeout] = useState<NodeJS.Timeout | null>(null);
   const [recorder, setRecorder] = useState<MediaRecorder | null>(null);
 
   const validateFile = (file: File) => {
@@ -58,9 +59,10 @@ export default function MainPage() {
         let chunks: Blob[] = [];
 
         setOngoingRecording(true);
-        setTimeout(() => {
+        const timeout = setTimeout(() => {
           setFirstThreeSeconds(false);
         }, 3000);
+        setFirstThreeSecondsTimeout(timeout);
         setRecorder(mediaRecorder);
 
         mediaRecorder.start();
@@ -69,7 +71,7 @@ export default function MainPage() {
           chunks.push(e.data);
         });
 
-        mediaRecorder.addEventListener('stop', () => {
+        const finishRecording = () => {
           const blob = new Blob(chunks, { type: "audio/wav" });
           setRecording(blob);
           setChosenFragment([]);
@@ -78,6 +80,15 @@ export default function MainPage() {
           tracks.forEach(track => track.stop());
 
           navigate('/choosing_fragment');
+        }
+
+        mediaRecorder.addEventListener('stop', finishRecording);
+
+        mediaRecorder.addEventListener('pause', () => {
+          const tracks = stream.getTracks();
+          tracks.forEach(track => track.stop());
+          mediaRecorder.removeEventListener('stop', finishRecording);
+          mediaRecorder.stop();
         });
       })
       .catch(() => {
@@ -143,6 +154,10 @@ export default function MainPage() {
 
               setOngoingRecording(false);
               setFirstThreeSeconds(true);
+
+              if (firstThreeSecondsTimeout) {
+                clearTimeout(firstThreeSecondsTimeout);
+              }
             }}>{isPolishVersion ? 'Anuluj' : 'Cancel'}</Button>
           </>
         }
