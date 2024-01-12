@@ -37,8 +37,10 @@ def classify_audio(input_tensors, model, binary_classifier, device):
 
   results = [result[0] * 5 * (result[1] - 0.8) for result in outputs if result[1] >= 0.8]
 
-  if len(results) == 0:
-    results = [result[0] * 2 * (result[1] - 0.5) for result in outputs if result[1] >= 0.5]
+  if len(results) > 0:
+    results = torch.stack(results).sum(dim=0).div(len(results))
+    results = results.div(results.sum(dim=0))
+  else:
+    results = torch.zeros(30)
 
-  results = torch.stack(results).sum(dim=0).div(len(results)) if len(results) > 0 else torch.zeros(30)
   return results.tolist()

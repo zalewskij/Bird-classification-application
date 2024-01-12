@@ -67,7 +67,7 @@ def analyze_audio():
     result = []
 
     for i, value in enumerate(output):
-      if value > 0.01:
+      if value > 0.05:
         bird = birds_list.iloc[i].to_dict()
         bird['probability'] = value
         result.append(bird)
