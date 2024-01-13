@@ -4,7 +4,8 @@ from flask_cors import CORS
 import pandas as pd
 import torch
 
-from CNN_model import CNNNetwork
+from torch import nn
+from torchvision.models import resnet34
 from CNN_binary_model import CNNBinaryNetwork
 from preprocessing import classify_audio, load_audio, preprocess_audio
 
@@ -15,8 +16,11 @@ CORS(app)
 DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
 base_path = Path(__file__).resolve().parent.parent / 'data'
 
-model = CNNNetwork().to(DEVICE)
-model.load_state_dict(torch.load(base_path / 'cnn_1.pt', map_location=DEVICE))
+model = resnet34(pretrained=True)
+model.fc = nn.Linear(512, 30)
+model.conv1 = nn.Conv2d(1, 64, kernel_size=(7, 7), stride=(2, 2), padding=(3, 3), bias=False)
+model = model.to(DEVICE)
+model.load_state_dict(torch.load(base_path / 'resnet.pt', map_location=DEVICE))
 model.eval()
 
 binary_classifier = CNNBinaryNetwork().to(DEVICE)
