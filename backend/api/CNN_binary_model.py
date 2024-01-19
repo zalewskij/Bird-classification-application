@@ -56,9 +56,6 @@ class CNNBinaryNetwork(nn.Module):
                 10880, 2
             )
         )
-        # self.linear2 = nn.Linear(
-        #     1024, 1
-        # )
 
     def forward(self, input_data):
         x = self.conv1(input_data)
@@ -67,5 +64,4 @@ class CNNBinaryNetwork(nn.Module):
         x = self.conv4(x)
         x = self.flatten(x)
         logits = self.linear1(x)
-        #logits = self.linear2(x)
         return logits
