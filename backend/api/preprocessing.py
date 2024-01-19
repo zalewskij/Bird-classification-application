@@ -41,6 +41,6 @@ def classify_audio(input_tensors, model, binary_classifier, device):
     results = torch.stack(results).sum(dim=0).div(len(results))
     results = results.div(results.sum(dim=0))
   else:
-    results = torch.zeros(30)
+    results = torch.zeros(287)
 
   return results.tolist()

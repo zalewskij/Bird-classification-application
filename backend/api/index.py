@@ -4,7 +4,8 @@ from flask_cors import CORS
 import pandas as pd
 import torch
 
-from CNN_model import CNNNetwork
+from torch import nn
+from torchvision.models import resnet34
 from CNN_binary_model import CNNBinaryNetwork
 from preprocessing import classify_audio, load_audio, preprocess_audio
 
@@ -15,15 +16,18 @@ CORS(app)
 DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
 base_path = Path(__file__).resolve().parent.parent / 'data'
 
-model = CNNNetwork().to(DEVICE)
-model.load_state_dict(torch.load(base_path / 'cnn_1.pt', map_location=DEVICE))
+model = resnet34(pretrained=True)
+model.fc = nn.Linear(512, 287)
+model.conv1 = nn.Conv2d(1, 64, kernel_size=(7, 7), stride=(2, 2), padding=(3, 3), bias=False)
+model = model.to(DEVICE)
+model.load_state_dict(torch.load(base_path / 'resnet_full.pt', map_location=DEVICE))
 model.eval()
 
 binary_classifier = CNNBinaryNetwork().to(DEVICE)
 binary_classifier.load_state_dict(torch.load(base_path / 'binary_classifier.pt', map_location=DEVICE))
 binary_classifier.eval()
 
-birds_list = pd.read_csv(base_path / 'bird-list-top30.csv', delimiter=";").sort_values(by='latin_name')
+birds_list = pd.read_csv(base_path / 'bird-list-chosen.csv', delimiter=";").sort_values(by='latin_name')
 
 @app.route('/analyze-audio', methods=['POST'])
 def analyze_audio():
